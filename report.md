@@ -1,7 +1,7 @@
 # [Title: the clinical question and how you answered it]
 
 **Biomedical Image Analysis · M.Sc. Applied Data Science and AI · SRH University Munich · Winter semester 2026/27**
-**Author(s):** Chandana Gurusiddappa, Dinesh [surname] · **Repository:** [link to your GitHub repository] · **Date:** [date]
+**Author(s):** Chandana Gurusiddappa, Dineshkumar Swaminathan · **Repository:** https://github.com/Chandana18G/kvasir-seg-polyp-segmentation · **Date:** [date]
 
 > How to use this template: copy it into your repository as `report.md` (or into LaTeX or Word with the same sections).
 > Replace everything in [square brackets]. The section titles follow the eight grading criteria of Session 1 (weights in brackets).

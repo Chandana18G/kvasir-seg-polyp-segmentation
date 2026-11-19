@@ -1,7 +1,7 @@
 # Polyp outlines in colonoscopy images: U-Net vs. a colour threshold
 
 **Biomedical Image Analysis · M.Sc. Applied Data Science and AI · SRH University Munich · WS 2026/27**
-**Authors:** Chandana Gurusiddappa, Dinesh [surname] · **Last updated:** 19.11.2026
+**Authors:** Chandana Gurusiddappa, Dineshkumar Swaminathan · **Last updated:** 19.11.2026
 
 Data: Kvasir-SEG (Jha et al., MMM 2020). The images are **not** in this repository: their
 licence allows research and education only. `scripts/download_data.py` fetches them.
