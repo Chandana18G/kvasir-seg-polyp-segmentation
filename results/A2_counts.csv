@@ -1,0 +1,4 @@
+split,images,mean_polyp_share,median_polyp_share,images_under_5_percent
+train,779,0.1542,0.1118,151
+val,100,0.1529,0.1230,20
+test,120,0.1532,0.1168,29
