@@ -6,3 +6,8 @@ __pycache__/
 .ipynb_checkpoints/
 *.pt
 *.pth
+
+# Local planning notes and slides, not part of the hand-in
+reports/
+research_notes/
+*.pptx
