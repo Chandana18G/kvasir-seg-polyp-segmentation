@@ -1,0 +1,8 @@
+# Kvasir-SEG images: research/education licence, never on GitHub.
+# Get them with: python scripts/download_data.py
+data/
+
+__pycache__/
+.ipynb_checkpoints/
+*.pt
+*.pth
