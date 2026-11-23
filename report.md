@@ -17,9 +17,9 @@
 
 ## 1 · The biomedical problem (15 %, with section 2)
 
-- **Clinical question:** [who would use the result, for what decision; for example "count nuclei to see whether a drug kills cells"]
-- **Task type:** [classification, segmentation, detection, regression; what goes in, what comes out]
-- **Why it is hard:** [small lesions, class imbalance, variation between scanners or sites, unclear borders …]
+- **Clinical question:** Colorectal polyps can turn into cancer, and polyps that are missed during colonoscopy are a known risk. A tool that outlines the polyp in each video frame could help the doctor not miss one. We ask: can a U-Net outline polyps in single colonoscopy frames well enough for this, and how much better is it than a simple brightness threshold? The user would be the endoscopist, as a second pair of eyes; the decision (remove the polyp or not) stays with the doctor.
+- **Task type:** Segmentation. In: one RGB colonoscopy frame. Out: a mask with one value per pixel, polyp or background.
+- **Why it is hard:** polyps vary from tiny (0.5 % of the image) to almost the whole frame, and 20 % of images have a polyp under 5 % of the image; about 85 % of pixels are background; flat polyps look like the bowel wall; light reflections, blur, stool and instruments; only 1,000 images from one hospital group; no patient IDs, so the same patient may be in training and test.
 
 ## 2 · The data (15 %, with section 1)
 
@@ -43,17 +43,25 @@
 
 ## 3 · Experimental design (15 %)
 
-- **The floor:** [the trivial answer: largest class, or "always background" (Dice 0)]
-- **Classical baseline:** [threshold, features + random forest, … (Sessions 5–6)]
-- **Deep-learning model:** [architecture, pretrained or not, 2D/2.5D/3D, loss (Dice + cross-entropy?), why]
-- **Augmentation:** [which changes, and why each one is plausible for this modality (Session 8)]
-- **Comparisons:** [one change at a time; same splits and budget; at least three seeds]
+- **The floor:** "always background" (Dice 0.000, every image has a polyp) and "always polyp" (Dice 0.243 ± 0.184 on test), computed from the masks, no training.
+- **Classical baseline** (`src/baseline.py`): Lab lightness L, Otsu threshold inside the endoscope view, opening and closing, keep the largest region. Our first idea was redness (Lab a*); it scored Dice 0.02 on validation. Measuring showed why: polyps are brighter than the surrounding wall in 90 % of validation images (L +37 on 0–255) but hardly redder (a* +3.8). With lightness, validation Dice is 0.39. The clean-up radius (3, 7, 11 or 15 px) is chosen on validation.
+- **Deep-learning model** (`src/unet.py`): a 2D U-Net with a ResNet-34 encoder and a 4-step decoder with skip connections; one output per pixel. Loss: binary cross-entropy + Dice loss (cross-entropy gives smooth gradients; Dice loss counters the 85 % background). Adam, learning rate 1e-4, batch 16, 30 epochs, input 256 × 256, ImageNet mean/std; the epoch with the best validation Dice is kept; threshold 0.5, fixed in advance.
+- **Augmentation** (training images only, `src/train.py`): left-right and up-down flips and 90° turns (an endoscope can see a polyp from any side and rotation, so these are plausible), brightness ± 10 % (the light changes with distance). No hue changes, because colour and brightness are real cues here.
+- **Comparisons:** one change at a time. The two U-Nets differ only in the encoder's starting weights: random ("from scratch") vs. ImageNet-pretrained. Same split, epochs, settings and seeds (0, 1, 2); mean ± standard deviation over the 3 seeds.
 
 ## 4 · Implementation and reproducibility (25 %)
 
-- **Run it:** [commands or notebook order; environment, for example `requirements.txt`]
-- **Seeds, hardware, training time:** […]
-- **Where the results come from:** [which notebook or script makes which table and figure]
+- **Run it:** `pip install -r requirements.txt`, then `python scripts/download_data.py`, `python scripts/make_split.py`, notebooks `01`, `02`, `BIA_W6_Project_Template_PartA`, and `03_models_and_evaluation` on Google Colab (T4 GPU, Runtime → Run all). Every notebook clones the repository and downloads the data itself when run on Colab. The download script handles the Simula server's incomplete certificate chain (certificate checking stays on).
+- **Seeds, hardware, training time:** split seed 42; training seeds 0, 1, 2; Google Colab T4 GPU; [time per epoch] s per epoch, 6 runs × 30 epochs.
+- **Where the results come from:**
+
+| Output | Made by |
+|---|---|
+| `results/fig_polyp_share.png`, floor | `notebooks/01_data_and_floor.ipynb` |
+| `results/fig_20_examples.png`, `results/fig_closest_pairs.png` | `notebooks/02_look_and_leakage.ipynb` |
+| `splits/*.txt`, `results/duplicates.csv` | `scripts/make_split.py` |
+| `results/A1_examples.png`, `A2_counts.csv`, `A5_data_table.md` | `notebooks/BIA_W6_Project_Template_PartA.ipynb` |
+| `results/B1_*`, `B2_*`, `C1_*` … `C5_*` | `notebooks/03_models_and_evaluation.ipynb` |
 
 ## 5 · Evaluation, validation and critical analysis (15 %)
 
@@ -73,7 +81,8 @@
 ## 6 · Explainability, ethics and clinical responsibility (5 %)
 
 - [Saliency maps or other explanations (Session 14), and what they can and cannot show]
-- [Who could be harmed by a wrong answer; what a doctor would still have to check; privacy of the data]
+- **Who could be harmed:** a missed polyp (false negative) can grow into cancer; that is why we report recall, results for small polyps separately, and the worst cases. A false alarm costs time and maybe an unneeded biopsy. The tool may only point; the doctor must still look at the whole frame, judge every polyp, and decide on removal. It has only been tested on images from one hospital group and one endoscope maker.
+- **Privacy:** the images are anonymised (random file names), but many frames show the date and time of the examination in the corner. We do not publish the raw images; the figures in this repository show a few downsized frames for teaching, as the licence allows with citation.
 
 ## 7 · Use of AI tools (5 %)
 
@@ -85,4 +94,10 @@
 
 ## References
 
-[All papers, data sets, code and websites you used.]
+- Jha D., Smedsrud P. H., Riegler M. A., Halvorsen P., de Lange T., Johansen D., Johansen H. D. *Kvasir-SEG: A Segmented Polyp Dataset.* MultiMedia Modeling (MMM 2020), LNCS 11962, pp. 451–462. https://doi.org/10.1007/978-3-030-37734-2_37 · Data: https://datasets.simula.no/kvasir-seg/ · Split: https://github.com/DebeshJha/Kvasir-SEG/tree/master/Data-split
+- Ronneberger O., Fischer P., Brox T. *U-Net: Convolutional Networks for Biomedical Image Segmentation.* MICCAI 2015.
+- He K., Zhang X., Ren S., Sun J. *Deep Residual Learning for Image Recognition* (ResNet). CVPR 2016. Weights: torchvision `ResNet34_Weights.IMAGENET1K_V1`.
+- Otsu N. *A Threshold Selection Method from Gray-Level Histograms.* IEEE Trans. SMC, 1979.
+- Selvaraju R. R. et al. *Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization.* ICCV 2017.
+- Jha D. et al. *A Comprehensive Study on Colorectal Polyp Segmentation with ResUNet++, Conditional Random Field and Test-Time Augmentation.* IEEE JBHI 2021 (same 880/120 split; U-Net with ResNet-34 encoder Dice 0.876 at 512 px).
+- Course material: Cerit J., Biomedical Image Analysis, SRH University Munich, WS 2026/27 (Sessions 1–13, project template).
