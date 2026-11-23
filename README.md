@@ -64,6 +64,8 @@ Test = the authors' own list of 120 (`Data-split/val.txt` on their GitHub), so o
   2. `python scripts/make_split.py`: `splits/train.txt`, `val.txt`, `test.txt` and `results/duplicates.csv` (about a minute).
   3. `notebooks/01_data_and_floor.ipynb`: checks, polyp share, floor, 256 × 256 cache.
   4. `notebooks/02_look_and_leakage.ipynb`: 20 examples, copies, split check, test-set check.
+  5. `notebooks/BIA_W6_Project_Template_PartA.ipynb`: the course template, Part A (A1–A5).
+  6. `notebooks/03_models_and_evaluation.ipynb` **on Colab, T4 GPU**: brightness baseline, U-Net from scratch vs. ImageNet-pretrained (3 seeds each), test set once, Grad-CAM, uncertainty (`results/B*`, `results/C*`).
 - **Which file makes which table or figure:**
 
 | Output | Made by |

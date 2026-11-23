@@ -1,4 +1,7 @@
 numpy
 pillow
 matplotlib
+scipy
+torch
+torchvision
 jupyter
