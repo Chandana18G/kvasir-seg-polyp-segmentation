@@ -108,7 +108,7 @@ No. Our Deep Learning project (same two people) reproduces LSTNet on time series
 | Evaluation: test table, intervals, worst cases, Grad-CAM, uncertainty | `src/metrics.py`, notebook `03` (Part C) | Chandana |
 | Report and README | `report.md`, `README.md` | Chandana |
 
-Dinesh Swaminathan: [to be added]
+| Extra analysis: which test images are hard (size, brightness contrast, later batch) | `dinesh/hard_images.ipynb` → `results/D1_*` | Dinesh |
 
 AI assistance (Claude Code) is described in report section 7.
 
