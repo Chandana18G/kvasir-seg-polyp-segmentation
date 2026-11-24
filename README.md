@@ -15,8 +15,8 @@ licence allows research and education only. `scripts/download_data.py` fetches t
 | U-Net, encoder from scratch (3 seeds) | 0.756 ± 0.009 | 0.661 ± 0.014 | 0.807 ± 0.021 |
 | U-Net, ImageNet-pretrained encoder (3 seeds) | **0.862 ± 0.007** | **0.788 ± 0.011** | **0.912 ± 0.016** |
 
-Pretraining is the only change between the two U-Nets and adds 0.106 Dice (95 % bootstrap
-interval of the pretrained model: 0.832–0.888); it helps most for small polyps (0.843 vs. 0.706).
+Pretraining is the only change between the two U-Nets and adds 0.106 Dice (better on 104 of
+120 test images, Wilcoxon p = 5.3 × 10⁻¹³, Holm-corrected; 95 % bootstrap interval of the pretrained model: 0.832–0.888); it helps most for small polyps (0.843 vs. 0.706).
 Images from a later batch, unlike anything in training, score lower (0.809 vs. 0.874).
 Full analysis: [report.md](report.md).
 
@@ -96,6 +96,7 @@ Test = the authors' own list of 120 (`Data-split/val.txt` on their GitHub), so o
 
 | `results/B5_sanity.png`, `results/C3_calibration.png`, `C3_calibration.md`, `requirements.txt` (exact versions) | `notebooks/04_template_extras.ipynb` |
 | `results/D1_hard_images.png`, `D1_summary.md` | `dinesh/hard_images.ipynb` |
+| `results/C6_stats.md` (paired tests, Holm) | `python src/stats.py` |
 
 **Course template → our files.** We followed `BIA_W6_Project_Template.ipynb`. Its own note says segmentation projects use Part A, and U-Net cells with Dice for B and C; our file names for B and C therefore differ:
 
@@ -133,7 +134,7 @@ No. Our Deep Learning project (same two people) reproduces LSTNet on time series
 | Report and README | `report.md`, `README.md` | Chandana |
 | Extra analysis: which test images are hard (size, brightness contrast, later batch) | `dinesh/hard_images.ipynb` → `results/D1_*` | Dinesh |
 
-AI assistance (Claude Code) is described in report section 7.
+AI assistance (Claude Code): [`AI_USAGE.md`](AI_USAGE.md) and report section 7.
 
 ## Citation
 
