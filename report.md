@@ -1,19 +1,13 @@
-# [Title: the clinical question and how you answered it]
+# Outlining polyps in colonoscopy images: a pretrained U-Net reaches Dice 0.86, a brightness threshold 0.32
 
 **Biomedical Image Analysis · M.Sc. Applied Data Science and AI · SRH University Munich · Winter semester 2026/27**
-**Author(s):** Chandana Gurusiddappa, Dineshkumar Swaminathan · **Repository:** https://github.com/Chandana18G/kvasir-seg-polyp-segmentation · **Date:** [date]
-
-> How to use this template: copy it into your repository as `report.md` (or into LaTeX or Word with the same sections).
-> Replace everything in [square brackets]. The section titles follow the eight grading criteria of Session 1 (weights in brackets).
-> The remaining criterion, code understanding and technical defense (15 %), is graded in the exam conversation, not in the report.
-> Same structure as the Deep Learning report, plus the biomedical parts: modality, labels, patient-level split, clinical meaning.
-> Shared data or paper with Deep Learning? Allowed (decided 15.10.): different questions; data preparation is graded here only; name the shared work in both reports.
+**Author(s):** Chandana Gurusiddappa, Dineshkumar Swaminathan · **Repository:** https://github.com/Chandana18G/kvasir-seg-polyp-segmentation · **Date:** 24.11.2026
 
 ---
 
 ## Abstract
 
-[Four or five sentences: the clinical question, the data, your classical baseline, your deep-learning model, the result with its spread, what it means and what it does not.]
+Can a network outline polyps in colonoscopy images well enough to help a doctor not miss one? We used Kvasir-SEG (1,000 frames with doctor-checked masks; no patient IDs), removed near-duplicates, and kept the authors' 120 test images for a single final test. A classical brightness threshold (Otsu) reached Dice 0.323 on test, only a little above the trivial "always polyp" floor (0.243). A U-Net with a ResNet-34 encoder reached Dice 0.756 ± 0.009 when trained from scratch and **0.862 ± 0.007** when the encoder started from ImageNet weights (3 seeds each; 95 % bootstrap interval 0.832–0.888); pretraining helped most for small polyps (0.843 vs. 0.706). Errors remain: 7 of 120 test images score below 0.5, mostly by drawing the polyp too small, and images from a later batch score lower (0.809 vs. 0.874). The result comes from one hospital group and one endoscope maker, on single frames, without a patient-level split, so it does not show how the model works in other hospitals or in live video.
 
 ## 1 · The biomedical problem (15 %, with section 2)
 
@@ -52,7 +46,7 @@
 ## 4 · Implementation and reproducibility (25 %)
 
 - **Run it:** `pip install -r requirements.txt`, then `python scripts/download_data.py`, `python scripts/make_split.py`, notebooks `01`, `02`, `BIA_W6_Project_Template_PartA`, and `03_models_and_evaluation` on Google Colab (T4 GPU, Runtime → Run all). Every notebook clones the repository and downloads the data itself when run on Colab. The download script handles the Simula server's incomplete certificate chain (certificate checking stays on).
-- **Seeds, hardware, training time:** split seed 42; training seeds 0, 1, 2; Google Colab T4 GPU; [time per epoch] s per epoch, 6 runs × 30 epochs.
+- **Seeds, hardware, training time:** split seed 42; training seeds 0, 1, 2; Google Colab T4 GPU; 18.3 s per epoch, 6 runs × 30 epochs ≈ 55 minutes. Each finished run is saved to Google Drive, so a disconnect does not lose it (our first full run was lost to a Colab disconnect). The brightness baseline needs no GPU (about 20 s for 100 images).
 - **Where the results come from:**
 
 | Output | Made by |
@@ -65,32 +59,79 @@
 
 ## 5 · Evaluation, validation and critical analysis (15 %)
 
-| Setting | [metric] mean | ± spread | seeds |
-|---|---|---|---|
-| floor | | | |
-| classical baseline | | | |
-| deep-learning model | | | |
-| + [change] | | | |
+Test set: the authors' 120 images, 256 × 256, threshold 0.5, mean over images; ± = standard deviation over 3 seeds (`results/C1_results.md`).
 
-- **Metrics that fit the task:** [Dice and IoU for masks; sensitivity and specificity, AUC for classes; volumes in mL …]
-- **Worst cases:** [the images where the model fails most, and why (Session 9)]
-- **Ceiling:** [what a second annotator would score, if known (Session 11)]
-- **Test set:** used **once**, for the final models only. External data, if any: [which].
-- **Limitations:** [what the results do **not** show: other scanners, other hospitals, other populations]
+| Setting | Dice | IoU | Precision | Recall | Seeds |
+|---|---|---|---|---|---|
+| floor: always background | 0.000 | 0.000 | 0.000 | 0.000 | – |
+| floor: always polyp | 0.243 | 0.153 | 0.153 | 1.000 | – |
+| brightness threshold (Otsu, radius 11) | 0.323 | 0.223 | 0.304 | 0.598 | – |
+| U-Net, encoder from scratch | 0.756 ± 0.009 | 0.661 ± 0.014 | 0.790 ± 0.025 | 0.807 ± 0.021 | 3 |
+| + ImageNet-pretrained encoder | **0.862 ± 0.007** | **0.788 ± 0.011** | **0.864 ± 0.029** | **0.912 ± 0.016** | 3 |
+
+**How sure, and for whom** (`results/C2_intervals_and_groups.md`; U-Net Dice per image = mean of its 3 seeds):
+
+| Setting | 95 % bootstrap interval | small polyps < 5 % (n = 29) | later batch (n = 23) | rest (n = 97) |
+|---|---|---|---|---|
+| brightness threshold | 0.282 – 0.370 | 0.146 | 0.304 | 0.328 |
+| U-Net scratch | 0.712 – 0.795 | 0.706 | 0.754 | 0.756 |
+| U-Net pretrained | 0.832 – 0.888 | 0.843 | 0.809 | 0.874 |
+
+![Dice per test image](results/C1_boxplot.png)
+
+*Figure 2: Dice per test image for the floor, the threshold and both U-Nets (`notebooks/03`, C1).*
+
+- **What the numbers say:** every step up the ladder helps, and the intervals do not overlap. Pretraining, the one change between the two U-Nets, adds 0.106 Dice; it is better on 104 of 120 test images. The seed spread (± 0.007–0.009) is much smaller than the gap, so the gap is not luck of the random start. Our pretrained result is close to the published U-Net with a ResNet-34 encoder on the same split (Dice 0.876 at 512 px, Jha et al. 2021), with smaller images (256 px) and only 30 epochs.
+- **Learning curves** (`results/B2_learning_curves.png`): the pretrained U-Net reaches validation Dice 0.80 after 2 epochs and levels off near 0.86 after about 10. The scratch U-Net is still rising at epoch 30 (best epochs 27–29), so with a bigger budget the gap would likely shrink; with the **same** budget, pretraining clearly wins.
+- **The baseline:** brightness finds the polyp's general area (recall 0.60) but also grabs reflections and pale folds (precision 0.30). It fails for small polyps (0.146), where the bright area is mostly something else.
+- **Metrics that fit the task:** Dice and IoU per image (each image counts the same, so small polyps are not drowned by large ones). Not pixel accuracy: "always background" would score about 85 %. Recall matters most clinically (a missed polyp is the dangerous error); the pretrained U-Net's recall is 0.912.
+- **Worst cases** (`results/C3_worst_cases.png`, Figure 3): 7 of 120 test images score below 0.5, while 75 score 0.9 or more (median 0.918). The worst 8 show three patterns: (1) **drawing too small**: for large or folded polyps (25–44 % of the image) the network marks only the most prominent part; (2) **bright distractors**: a tiny polyp (1 %) next to a strong light reflection, where the network marks the bright area instead; (3) **unclear or several regions**: frames where the doctor marked two separate areas or where a pale fold looks like a polyp. 3 of the worst 8 come from the later batch (which is only 19 % of the test set), one of them with the coloured position box that never appears in training.
+- **Ceiling:** unknown. Kvasir-SEG gives one consensus mask per image and no agreement between annotators. Several worst cases have borders that a second doctor might draw differently, so a Dice of 1 is not a realistic goal.
+- **Test set:** used **once**, at the end, for all five settings. All choices (baseline colour channel and radius, best epoch, threshold 0.5) were made on validation. External data: none.
+- **Limitations:** one dataset from one hospital group (Vestre Viken, Norway) and one endoscope maker (Olympus); single still frames, not video; no patient IDs, so the same patient may be in training and test (we removed 7 near-duplicate pairs, but frames of the same polyp from another angle remain possible); images at 256 × 256; scratch model not trained to convergence; 3 seeds only. The later-batch result (0.809 vs. 0.874) hints that performance drops on images that differ from training, so other hospitals would likely score lower.
+
+![Worst cases](results/C3_worst_cases.png)
+
+*Figure 3: the 8 test images where the pretrained U-Net scores lowest. Rows: image, doctor's mask, U-Net (mean of 3 seeds, > 0.5).*
 
 ## 6 · Explainability, ethics and clinical responsibility (5 %)
 
-- [Saliency maps or other explanations (Session 14), and what they can and cannot show]
+- **Grad-CAM and uncertainty** (`results/C4_gradcam_uncertainty.png`, Figure 4): for the 3 best test images (Dice 0.98), Grad-CAM is centred on the polyp and the 3 seed models agree everywhere except a thin line at the border. For the worst images, Grad-CAM points at what misled the network, for example the bright reflection instead of the tiny polyp, and the uncertainty map is brightest in the areas that are wrong. So uncertainty is a useful warning sign: a tool could flag frames where the seed models disagree.
+- **What these maps cannot show:** Grad-CAM shows which deep features increased the polyp output, at 8 × 8 resolution, so it is blurry and cannot explain the exact border; it does not prove the network uses "polyp shape" rather than brightness or texture. Low uncertainty does not mean correct: three models can agree on the same mistake.
+
+![Grad-CAM and uncertainty](results/C4_gradcam_uncertainty.png)
+
+*Figure 4: 3 best and 3 worst test images. Rows: image; doctor (green) vs. U-Net (red); Grad-CAM of the pretrained U-Net (seed 0); uncertainty (standard deviation of the 3 seeds).*
 - **Who could be harmed:** a missed polyp (false negative) can grow into cancer; that is why we report recall, results for small polyps separately, and the worst cases. A false alarm costs time and maybe an unneeded biopsy. The tool may only point; the doctor must still look at the whole frame, judge every polyp, and decide on removal. It has only been tested on images from one hospital group and one endoscope maker.
 - **Privacy:** the images are anonymised (random file names), but many frames show the date and time of the examination in the corner. We do not publish the raw images; the figures in this repository show a few downsized frames for teaching, as the licence allows with citation.
 
 ## 7 · Use of AI tools (5 %)
 
-[Which tools you used, for what (code, text, debugging), and how you **checked** their output. Be specific.]
+**Tool:** Claude Code (Anthropic), an AI coding assistant.
+
+**What we used it for:**
+- **Research:** facts about Kvasir-SEG (paper, licence, annotators, the authors' split) and published results for comparison. We checked each fact against the dataset page or the downloaded files; two claims from the literature turned out to be wrong or incomplete for our copy (the "blacked-out" position box is still visible in 13 test images, and the masks contain only 0.73 % grey pixels, not the widely mentioned noisy masks).
+- **Drafting code:** the download and split scripts, `src/` (data, duplicates, metrics, baseline, U-Net, training) and the notebooks.
+- **Debugging:** the Colab certificate error on the Simula server, a Windows text-encoding problem, and making the training resumable after a Colab disconnect.
+- **Drafting text:** parts of this report and the README.
+
+**How we checked it:**
+- We ran every notebook ourselves and looked at every figure.
+- We checked the duplicate rule by eye on the 25 closest image pairs.
+- We tested assumptions on the data before trusting them. The first suggested baseline (redness) scored Dice 0.02 on validation; measuring showed polyps are brighter, not redder, so we changed it.
+- We checked that the same number comes out of different code: the floor is 0.243 in notebooks 01, the template Part A and 03. A fresh clone from GitHub rebuilt identical split files.
+- We compared our U-Net result with the published one on the same split.
+- We read every file until we could explain each step; the code is kept short and commented for that reason.
+
+**Where it was wrong:** the redness baseline idea; a first claim that some masks extend under the black corner box (a pixel check showed they do not); a note that a same-polyp pair was in training only (it is split across training and validation).
 
 ## 8 · Conclusion (documentation and communication, 5 %)
 
-[What you found, how sure you are, what you would do next.]
+**What we found:** on Kvasir-SEG, a U-Net with an ImageNet-pretrained ResNet-34 encoder outlines polyps with a test Dice of 0.862 ± 0.007 (3 seeds), far above a brightness threshold (0.323) and the floor (0.243). Pretraining is the single change that adds the most (+0.106 against the same U-Net from scratch), and it helps most where it matters clinically: small polyps (0.843 vs. 0.706).
+
+**How sure we are:** sure about the ranking (the bootstrap intervals do not overlap, and the seed spread is small); less sure about the exact number, because the test set has only 120 images, there is no patient-level split, and all images come from one hospital group. The lower score on the later batch (0.809) is a warning that new images will score lower.
+
+**What we would do next:** train the scratch model longer to see how much of the gap is speed rather than final quality; use full resolution or 512 px for small polyps; test on another dataset from a different hospital (for example CVC-ClinicDB) as an external test; use the seed disagreement as a "please check this frame" signal; and move from single frames to video, where a polyp seen in several frames is easier to confirm.
 
 ## References
 
