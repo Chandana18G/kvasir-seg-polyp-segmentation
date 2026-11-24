@@ -107,7 +107,6 @@ No. Our Deep Learning project (same two people) reproduces LSTNet on time series
 | Models: brightness baseline, U-Net, training on Colab | `src/baseline.py`, `src/unet.py`, `src/train.py`, notebook `03` (Part B) | Chandana |
 | Evaluation: test table, intervals, worst cases, Grad-CAM, uncertainty | `src/metrics.py`, notebook `03` (Part C) | Chandana |
 | Report and README | `report.md`, `README.md` | Chandana |
-
 | Extra analysis: which test images are hard (size, brightness contrast, later batch) | `dinesh/hard_images.ipynb` → `results/D1_*` | Dinesh |
 
 AI assistance (Claude Code) is described in report section 7.
