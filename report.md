@@ -56,6 +56,8 @@ Can a network outline polyps in colonoscopy images well enough to help a doctor 
 | `splits/*.txt`, `results/duplicates.csv` | `scripts/make_split.py` |
 | `results/A1_examples.png`, `A2_counts.csv`, `A5_data_table.md` | `notebooks/BIA_W6_Project_Template_PartA.ipynb` |
 | `results/B1_*`, `B2_*`, `C1_*` … `C5_*` | `notebooks/03_models_and_evaluation.ipynb` |
+| `results/B5_sanity.png`, `C3_calibration.*`, `requirements.txt` (exact versions from Colab) | `notebooks/04_template_extras.ipynb` (loads the saved models, no training) |
+| `results/D1_*` | `dinesh/hard_images.ipynb` |
 
 ## 5 · Evaluation, validation and critical analysis (15 %)
 
@@ -86,6 +88,7 @@ Test set: the authors' 120 images, 256 × 256, threshold 0.5, mean over images; 
 - **The baseline:** brightness finds the polyp's general area (recall 0.60) but also grabs reflections and pale folds (precision 0.30). It fails for small polyps (0.146), where the bright area is mostly something else.
 - **Metrics that fit the task:** Dice and IoU per image (each image counts the same, so small polyps are not drowned by large ones). Not pixel accuracy: "always background" would score about 85 %. Recall matters most clinically (a missed polyp is the dangerous error); the pretrained U-Net's recall is 0.912.
 - **Worst cases** (`results/C3_worst_cases.png`, Figure 3): 7 of 120 test images score below 0.5, while 75 score 0.9 or more (median 0.918). The worst 8 show three patterns: (1) **drawing too small**: for large or folded polyps (25–44 % of the image) the network marks only the most prominent part; (2) **bright distractors**: a tiny polyp (1 %) next to a strong light reflection, where the network marks the bright area instead; (3) **unclear or several regions**: frames where the doctor marked two separate areas or where a pale fold looks like a polyp. 3 of the worst 8 come from the later batch (which is only 19 % of the test set), one of them with the coloured position box that never appears in training.
+- **Calibration** (`results/C3_calibration.png`, `notebooks/04`): grouping all test pixels by the predicted polyp probability (mean of 3 seeds), both U-Nets are close to honest: calibration error 0.023 for scratch and 0.063 for pretrained. The pretrained model slightly overestimates low probabilities (pixels it gives 5–15 % are polyp only 1–2 % of the time), which is the safe direction for not missing a polyp. So the better segmenter is not the better-calibrated one; a probability map shown to a doctor would need this check.
 - **Ceiling:** unknown. Kvasir-SEG gives one consensus mask per image and no agreement between annotators. Several worst cases have borders that a second doctor might draw differently, so a Dice of 1 is not a realistic goal.
 - **Test set:** used **once**, at the end, for all five settings. All choices (baseline colour channel and radius, best epoch, threshold 0.5) were made on validation. External data: none.
 - **Limitations:** one dataset from one hospital group (Vestre Viken, Norway) and one endoscope maker (Olympus); single still frames, not video; no patient IDs, so the same patient may be in training and test (we removed 7 near-duplicate pairs, but frames of the same polyp from another angle remain possible); images at 256 × 256; scratch model not trained to convergence; 3 seeds only. The later-batch result (0.809 vs. 0.874) hints that performance drops on images that differ from training, so other hospitals would likely score lower.
@@ -98,6 +101,7 @@ Test set: the authors' 120 images, 256 × 256, threshold 0.5, mean over images; 
 
 - **Grad-CAM and uncertainty** (`results/C4_gradcam_uncertainty.png`, Figure 4): for the 3 best test images (Dice 0.98), Grad-CAM is centred on the polyp and the 3 seed models agree everywhere except a thin line at the border. For the worst images, Grad-CAM points at what misled the network, for example the bright reflection instead of the tiny polyp, and the uncertainty map is brightest in the areas that are wrong. So uncertainty is a useful warning sign: a tool could flag frames where the seed models disagree.
 - **What these maps cannot show:** Grad-CAM shows which deep features increased the polyp output, at 8 × 8 resolution, so it is blurry and cannot explain the exact border; it does not prove the network uses "polyp shape" rather than brightness or texture. Low uncertainty does not mean correct: three models can agree on the same mistake.
+- **Sanity check** (`results/B5_sanity.png`, template B5; Adebayo et al. 2018): we gave the U-Net's last layer random weights again and computed Grad-CAM on the same 4 test images. For 2 of the 4 the map hardly changed (correlation 0.98 and 1.00), including the best image; only for the worst image did it change clearly (0.26). So most of our Grad-CAM maps show where the encoder's features are strong, not what the network learned about polyps. We would show the worst image's map (it depends on training) but not trust the best image's map, even though it looks convincing. Randomising only the final 1 × 1 layer is a mild test for a U-Net; randomising the whole decoder would be stronger.
 
 ![Grad-CAM and uncertainty](results/C4_gradcam_uncertainty.png)
 
@@ -139,6 +143,7 @@ Test set: the authors' 120 images, 256 × 256, threshold 0.5, mean over images; 
 - Ronneberger O., Fischer P., Brox T. *U-Net: Convolutional Networks for Biomedical Image Segmentation.* MICCAI 2015.
 - He K., Zhang X., Ren S., Sun J. *Deep Residual Learning for Image Recognition* (ResNet). CVPR 2016. Weights: torchvision `ResNet34_Weights.IMAGENET1K_V1`.
 - Otsu N. *A Threshold Selection Method from Gray-Level Histograms.* IEEE Trans. SMC, 1979.
+- Adebayo J. et al. *Sanity Checks for Saliency Maps.* NeurIPS 2018.
 - Selvaraju R. R. et al. *Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization.* ICCV 2017.
 - Jha D. et al. *A Comprehensive Study on Colorectal Polyp Segmentation with ResUNet++, Conditional Random Field and Test-Time Augmentation.* IEEE JBHI 2021 (same 880/120 split; U-Net with ResNet-34 encoder Dice 0.876 at 512 px).
 - Course material: Cerit J., Biomedical Image Analysis, SRH University Munich, WS 2026/27 (Sessions 1–13, project template).

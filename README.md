@@ -82,6 +82,7 @@ Test = the authors' own list of 120 (`Data-split/val.txt` on their GitHub), so o
   4. `notebooks/02_look_and_leakage.ipynb`: 20 examples, copies, split check, test-set check.
   5. `notebooks/BIA_W6_Project_Template_PartA.ipynb`: the course template, Part A (A1–A5).
   6. `notebooks/03_models_and_evaluation.ipynb` **on Colab, T4 GPU**: brightness baseline, U-Net from scratch vs. ImageNet-pretrained (3 seeds each), test set once, Grad-CAM, uncertainty (`results/B*`, `results/C*`).
+  7. `notebooks/04_template_extras.ipynb` (Colab, no GPU needed, about 10 min): loads the 6 saved U-Nets from Google Drive and adds the template's B5 heat-map sanity check, C3 calibration and exact package versions.
 - **Which file makes which table or figure:**
 
 | Output | Made by |
@@ -92,6 +93,29 @@ Test = the authors' own list of 120 (`Data-split/val.txt` on their GitHub), so o
 | `results/A1_examples.png`, `A2_counts.csv`, `A5_data_table.md` | `notebooks/BIA_W6_Project_Template_PartA.ipynb` |
 | `results/B1_baseline_examples.png`, `B2_learning_curves.png`, `B2_histories.json` | `notebooks/03_models_and_evaluation.ipynb` (Part B) |
 | `results/C1_results.md`, `C1_boxplot.png`, `C2_intervals_and_groups.md`, `C3_worst_cases.png`, `C4_gradcam_uncertainty.png`, `C5_summary.md` | `notebooks/03_models_and_evaluation.ipynb` (Part C) |
+
+| `results/B5_sanity.png`, `results/C3_calibration.png`, `C3_calibration.md`, `requirements.txt` (exact versions) | `notebooks/04_template_extras.ipynb` |
+| `results/D1_hard_images.png`, `D1_summary.md` | `dinesh/hard_images.ipynb` |
+
+**Course template → our files.** We followed `BIA_W6_Project_Template.ipynb`. Its own note says segmentation projects use Part A, and U-Net cells with Dice for B and C; our file names for B and C therefore differ:
+
+| Template step | Our file |
+|---|---|
+| A1 · 20 images · A2 · counts and floor · A5 · data table | `results/A1_examples.png`, `A2_counts.csv`, `A5_data_table.md` |
+| A3 · twins | 0 of 120 test images have a near-twin in training (template check; no figure is made when there are none) + our own check: `results/duplicates.csv`, `fig_closest_pairs.png` |
+| A4 · patients | not possible (no patient IDs), see block 5 |
+| B1 · simple baseline | brightness threshold: `results/B1_baseline_examples.png` |
+| B2 · borrowed network | ImageNet-pretrained U-Net: `results/B2_learning_curves.png` |
+| B3 · numbers side by side | `results/C1_results.md`, `C1_boxplot.png` |
+| B4 · Grad-CAM | `results/C4_gradcam_uncertainty.png` |
+| B5 · heat-map sanity check | `results/B5_sanity.png` |
+| C1 · three seeds | `results/C1_results.md` (mean ± std) |
+| C2 · bootstrap | `results/C2_intervals_and_groups.md` |
+| C3 · calibration | `results/C3_calibration.png`, `C3_calibration.md` |
+| C4 · worst cases | `results/C3_worst_cases.png` |
+| C5 · summary, requirements | `results/C5_summary.md`, `requirements.txt` |
+
+**Heat maps: one we would show, one we would not trust** (template B5). We would show the worst test image with the coloured position box (`B5_sanity.png`, right column): its Grad-CAM sits on the small polyp-like spot the network marked, and with a random last layer the map spreads over the whole image (correlation 0.26), so this map does depend on what the network learned. We would not trust the best test image on the left (Dice 0.99): it looks perfect, centred on the polyp, but the map is almost the same with a random last layer (correlation 0.98), so it shows where the encoder's features are strong, not what the network learned about polyps. The same holds for a second image (correlation 1.00). Our Grad-CAM maps are therefore weak evidence; we use them only to point at where to look.
 
 Training: Colab T4, 18.3 s per epoch, 6 runs × 30 epochs ≈ 55 min. Finished runs are saved to Google Drive, so after a disconnect, **Run all** continues where it stopped.
 
