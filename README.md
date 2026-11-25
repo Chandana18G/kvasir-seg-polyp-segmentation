@@ -28,9 +28,9 @@ Full analysis: [report.md](report.md).
 
 | Folder | What | Who |
 |---|---|---|
-| [`chandana/`](chandana/) | notebooks 01–04 and the template Part A: data, baseline, U-Nets, evaluation | Chandana |
-| [`dinesh/`](dinesh/) | `hard_images.ipynb`: which test images are hard for the U-Net | Dinesh |
-| `src/`, `scripts/` | shared code used by both folders (data loading, duplicates, metrics, baseline, U-Net, training, statistics) | Chandana |
+| [`chandana/`](chandana/) | **models and results**: `03_models_and_evaluation` (baseline, U-Nets, test evaluation, Grad-CAM) and `04_template_extras` (B5 sanity check, C3 calibration) | Chandana |
+| [`dinesh/`](dinesh/) | **data**: `01_data_and_floor`, `02_look_and_leakage`, the template Part A, and `hard_images` (which test images are hard) | Dinesh |
+| `src/`, `scripts/` | shared code: `scripts/`, `src/data.py`, `src/duplicates.py` belong to the data part; `src/baseline.py`, `unet.py`, `train.py`, `metrics.py`, `stats.py` to the models part | see "Who is responsible for what" |
 | `results/` | all tables and figures (parts A, B, C and D1) | made by the notebooks above |
 | `splits/` | train / validation / test file lists | `scripts/make_split.py` |
 
@@ -64,7 +64,7 @@ and how much better is it than a simple brightness threshold?
 ## 5 · Leakage check  *(Session 7 · report sections 2 and 5)*
 
 1. **Several images per patient? Split by patient?** Probably yes, and no. The file names are random IDs and there are no patient IDs, so we cannot split by patient. We found one pair that shows the same polyp on the same date from another angle; it sits in train and validation. Our numbers may therefore be a little optimistic.
-2. **Copies?** No byte-identical files. Our check (fingerprint "dHash" distance ≤ 3 of 64 **and** mask IoU ≥ 0.5, limits chosen by looking at the 25 closest pairs) found **7 near-duplicate pairs** (3 identical photos, 4 almost the same frame). One pair crossed into the test set; we dropped its training copy. No mirrored copies. Details: `chandana/02_look_and_leakage.ipynb`, `results/duplicates.csv`.
+2. **Copies?** No byte-identical files. Our check (fingerprint "dHash" distance ≤ 3 of 64 **and** mask IoU ≥ 0.5, limits chosen by looking at the 25 closest pairs) found **7 near-duplicate pairs** (3 identical photos, 4 almost the same frame). One pair crossed into the test set; we dropped its training copy. No mirrored copies. Details: `dinesh/02_look_and_leakage.ipynb`, `results/duplicates.csv`.
 3. **Statistics and augmentation after the split, training only?** Yes. We split first. Normalisation uses ImageNet values or training-set statistics only; flips, rotations and brightness changes are applied to training images only.
 4. **Epochs and thresholds on validation, never test?** Yes. Best epoch by validation Dice; threshold fixed at 0.5 in advance; the classical threshold is tuned on validation. The test set is used once, at the end.
 5. **Could something in the image give the label away?** Every image has a polyp, so nothing can give away "polyp yes/no". But: a black octagon border, a black box in the bottom-left corner (the position map was blacked out), text with date and time, and sometimes instruments. **13 test images still show the coloured position box, and none of the training images do.** We report Dice on the polyp only, not pixel accuracy.
@@ -77,7 +77,7 @@ Test = the authors' own list of 120 (`Data-split/val.txt` on their GitHub), so o
 - [x] 0 · Question: one sentence (block 1)
 - [x] 1 · Load: my data downloads in Colab (notebook 03 runs end to end on a Colab T4)
 - [x] 2 · Look: 20 images with their labels, looked at by eye (`results/fig_20_examples.png`)
-- [x] 3 · Count: share of foreground pixels; the floor (`chandana/01_data_and_floor.ipynb`)
+- [x] 3 · Count: share of foreground pixels; the floor (`dinesh/01_data_and_floor.ipynb`)
 - [x] 4 · Check: twins, the same patient twice (block 5)
 - [x] 5 · Table: the data table in report section 2 is filled in
 - [x] 6 · Number: a first network next to the floor and the classical baseline (Result above, `results/C1_results.md`)
@@ -88,19 +88,19 @@ Test = the authors' own list of 120 (`Data-split/val.txt` on their GitHub), so o
 - **Order:**
   1. `python scripts/download_data.py`: data into `data/` (46 MB).
   2. `python scripts/make_split.py`: `splits/train.txt`, `val.txt`, `test.txt` and `results/duplicates.csv` (about a minute).
-  3. `chandana/01_data_and_floor.ipynb`: checks, polyp share, floor, 256 × 256 cache.
-  4. `chandana/02_look_and_leakage.ipynb`: 20 examples, copies, split check, test-set check.
-  5. `chandana/BIA_W6_Project_Template_PartA.ipynb`: the course template, Part A (A1–A5).
+  3. `dinesh/01_data_and_floor.ipynb`: checks, polyp share, floor, 256 × 256 cache.
+  4. `dinesh/02_look_and_leakage.ipynb`: 20 examples, copies, split check, test-set check.
+  5. `dinesh/BIA_W6_Project_Template_PartA.ipynb`: the course template, Part A (A1–A5).
   6. `chandana/03_models_and_evaluation.ipynb` **on Colab, T4 GPU**: brightness baseline, U-Net from scratch vs. ImageNet-pretrained (3 seeds each), test set once, Grad-CAM, uncertainty (`results/B*`, `results/C*`).
   7. `chandana/04_template_extras.ipynb` (Colab, no GPU needed, about 10 min): loads the 6 saved U-Nets from Google Drive and adds the template's B5 heat-map sanity check, C3 calibration and exact package versions.
 - **Which file makes which table or figure:**
 
 | Output | Made by |
 |---|---|
-| `results/fig_polyp_share.png`, floor numbers | `chandana/01_data_and_floor.ipynb` |
-| `results/fig_20_examples.png`, `results/fig_closest_pairs.png` | `chandana/02_look_and_leakage.ipynb` |
+| `results/fig_polyp_share.png`, floor numbers | `dinesh/01_data_and_floor.ipynb` |
+| `results/fig_20_examples.png`, `results/fig_closest_pairs.png` | `dinesh/02_look_and_leakage.ipynb` |
 | `splits/*.txt`, `results/duplicates.csv` | `scripts/make_split.py` |
-| `results/A1_examples.png`, `A2_counts.csv`, `A5_data_table.md` | `chandana/BIA_W6_Project_Template_PartA.ipynb` |
+| `results/A1_examples.png`, `A2_counts.csv`, `A5_data_table.md` | `dinesh/BIA_W6_Project_Template_PartA.ipynb` |
 | `results/B1_baseline_examples.png`, `B2_learning_curves.png`, `B2_histories.json` | `chandana/03_models_and_evaluation.ipynb` (Part B) |
 | `results/C1_results.md`, `C1_boxplot.png`, `C2_intervals_and_groups.md`, `C3_worst_cases.png`, `C4_gradcam_uncertainty.png`, `C5_summary.md` | `chandana/03_models_and_evaluation.ipynb` (Part C) |
 
@@ -134,15 +134,15 @@ Training: Colab T4, 18.3 s per epoch, 6 runs × 30 epochs ≈ 55 min. Finished r
 
 No. Our Deep Learning project (same two people) reproduces LSTNet on time series. No data, paper or code is shared. If we reuse a small helper (for example a seed function), we will name it here and in both reports.
 
-## Who did what
+## Who is responsible for what
+
+Each of us is responsible for one half and presents and defends it.
 
 | Part | Files | Who |
 |---|---|---|
-| Data: download, checks, polyp share, floor, duplicates, split | `scripts/`, `src/data.py`, `src/duplicates.py`, `chandana/` notebooks `01`, `02`, template Part A | Chandana |
-| Models: brightness baseline, U-Net, training on Colab | `src/baseline.py`, `src/unet.py`, `src/train.py`, notebook `03` (Part B) | Chandana |
-| Evaluation: test table, intervals, worst cases, Grad-CAM, uncertainty | `src/metrics.py`, notebook `03` (Part C) | Chandana |
-| Report and README | `report.md`, `README.md` | Chandana |
-| Extra analysis: which test images are hard (size, brightness contrast, later batch) | `dinesh/hard_images.ipynb` → `results/D1_*` | Dinesh |
+| **Data**: download, mask checks, polyp share, floor, near-duplicates, split, template Part A (A1–A5), which test images are hard | `dinesh/`, `scripts/`, `src/data.py`, `src/duplicates.py` → `results/A*`, `fig_*`, `duplicates.csv`, `D1_*` | Dinesh |
+| **Models and results**: brightness baseline, U-Net from scratch vs. pretrained, training on Colab, test evaluation, statistics, Grad-CAM, uncertainty, template B5 and C3 | `chandana/`, `src/baseline.py`, `unet.py`, `train.py`, `metrics.py`, `stats.py` → `results/B*`, `C*` | Chandana |
+| Report, README | `report.md`, `README.md` | Chandana |
 
 AI assistance (Claude Code): [`AI_USAGE.md`](AI_USAGE.md) and report section 7.
 

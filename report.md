@@ -3,7 +3,7 @@
 **Biomedical Image Analysis · M.Sc. Applied Data Science and AI · SRH University Munich · Winter semester 2026/27**
 **Author(s):** Chandana Gurusiddappa, Dineshkumar Swaminathan · **Repository:** https://github.com/Chandana18G/kvasir-seg-polyp-segmentation · **Date:** 24.11.2026
 
-**Who did which part:** Chandana Gurusiddappa did the data preparation and checks, the baseline, the U-Nets, the evaluation and the report (code drafted with Claude Code, see section 7 and `AI_USAGE.md`). Dineshkumar Swaminathan did the extra analysis of which test images are hard (`dinesh/`, section 5).
+**Who is responsible for which part:** Dineshkumar Swaminathan: the data part (download, mask checks, near-duplicates, split, template Part A, and which test images are hard; `dinesh/`). Chandana Gurusiddappa: the models and results (baseline, U-Nets, evaluation, statistics, explainability; `chandana/`) and the report. Code was drafted with Claude Code (section 7, `AI_USAGE.md`).
 
 ---
 
@@ -35,7 +35,7 @@ Can a network outline polyps in colonoscopy images well enough to help a doctor 
 
 ![20 Kvasir-SEG images with the doctors' masks in green](results/fig_20_examples.png)
 
-*Figure 1: 20 random images (seed 0) with their masks in green. Made by `chandana/02_look_and_leakage.ipynb`.*
+*Figure 1: 20 random images (seed 0) with their masks in green. Made by `dinesh/02_look_and_leakage.ipynb`.*
 
 ## 3 · Experimental design (15 %)
 
@@ -53,10 +53,10 @@ Can a network outline polyps in colonoscopy images well enough to help a doctor 
 
 | Output | Made by |
 |---|---|
-| `results/fig_polyp_share.png`, floor | `chandana/01_data_and_floor.ipynb` |
-| `results/fig_20_examples.png`, `results/fig_closest_pairs.png` | `chandana/02_look_and_leakage.ipynb` |
+| `results/fig_polyp_share.png`, floor | `dinesh/01_data_and_floor.ipynb` |
+| `results/fig_20_examples.png`, `results/fig_closest_pairs.png` | `dinesh/02_look_and_leakage.ipynb` |
 | `splits/*.txt`, `results/duplicates.csv` | `scripts/make_split.py` |
-| `results/A1_examples.png`, `A2_counts.csv`, `A5_data_table.md` | `chandana/BIA_W6_Project_Template_PartA.ipynb` |
+| `results/A1_examples.png`, `A2_counts.csv`, `A5_data_table.md` | `dinesh/BIA_W6_Project_Template_PartA.ipynb` |
 | `results/B1_*`, `B2_*`, `C1_*` … `C5_*` | `chandana/03_models_and_evaluation.ipynb` |
 | `results/B5_sanity.png`, `C3_calibration.*`, `requirements.txt` (exact versions from Colab) | `chandana/04_template_extras.ipynb` (loads the saved models, no training) |
 | `results/D1_*` | `dinesh/hard_images.ipynb` |
