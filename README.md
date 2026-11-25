@@ -47,7 +47,7 @@ and how much better is it than a simple brightness threshold?
 | **Images** | Kvasir-SEG: 1,000 RGB colonoscopy frames (JPEG, 332–1920 px wide), Vestre Viken Health Trust, Norway. https://datasets.simula.no/kvasir-seg/ (46 MB, unchanged since 2019, downloaded 19.11.2026) |
 | **Labels** | One binary mask per image (white = polyp). Every image contains a polyp. Polyps cover on average 15.4 % of the image (median 11.4 %, from 0.5 % to 81 %); 200 images have a polyp under 5 % of the image. |
 | **Metric** | Dice per image, averaged (main), plus IoU, precision and recall, threshold 0.5; mean ± std over 3 seeds. Not pixel accuracy: about 85 % of pixels are background. |
-| **Baseline** | Floor: "always background" = Dice 0.000; "always polyp" = Dice 0.243 ± 0.184 on test. Classical: Lab lightness L + Otsu threshold + clean-up + largest region (test Dice 0.323). Our first idea, redness (Lab a*), scored only 0.02 on validation: polyps are brighter than the bowel wall, not redder. |
+| **Baseline** | Floor: "always background" = Dice 0.000; "always polyp" = Dice 0.243 ± 0.184 (± = spread over the 120 test images, not over seeds; the floor has no training) on test. Classical: Lab lightness L + Otsu threshold + clean-up + largest region (test Dice 0.323). Our first idea, redness (Lab a*), scored only 0.02 on validation: polyps are brighter than the bowel wall, not redder. |
 
 ## 3 · Flat images or stacks?  *(Session 10 · report section 2)*
 
