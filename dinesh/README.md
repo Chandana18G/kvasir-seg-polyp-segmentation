@@ -5,6 +5,6 @@ U-Net gets wrong have something in common: polyp size, how much brighter the pol
 the bowel wall, or coming from the later batch. No training, no GPU, about 1 minute.
 
 Run: open in Colab (or Jupyter) and Run all. It needs `results/C1_dice_per_image.json`
-from `notebooks/03_models_and_evaluation.ipynb`.
+from `chandana/03_models_and_evaluation.ipynb`.
 
 Output: `results/D1_hard_images.png`, `results/D1_summary.md`.

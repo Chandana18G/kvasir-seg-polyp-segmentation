@@ -10,7 +10,7 @@ We test 3 comparisons at once, so the p-values are corrected with Holm's method.
 A test over seeds is not possible: with 3 seeds Wilcoxon cannot reach p < 0.05 (needs >= 6).
 The seed spread is reported as mean +- std instead (results/C1_results.md).
 
-Input:  results/C1_dice_per_image.json  (from notebooks/03; U-Net = mean of its 3 seeds)
+Input:  results/C1_dice_per_image.json  (from chandana/03; U-Net = mean of its 3 seeds)
 Output: results/C6_stats.md
 Usage:  python src/stats.py
 """

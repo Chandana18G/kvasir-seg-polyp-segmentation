@@ -35,7 +35,7 @@ Can a network outline polyps in colonoscopy images well enough to help a doctor 
 
 ![20 Kvasir-SEG images with the doctors' masks in green](results/fig_20_examples.png)
 
-*Figure 1: 20 random images (seed 0) with their masks in green. Made by `notebooks/02_look_and_leakage.ipynb`.*
+*Figure 1: 20 random images (seed 0) with their masks in green. Made by `chandana/02_look_and_leakage.ipynb`.*
 
 ## 3 · Experimental design (15 %)
 
@@ -47,18 +47,18 @@ Can a network outline polyps in colonoscopy images well enough to help a doctor 
 
 ## 4 · Implementation and reproducibility (25 %)
 
-- **Run it:** `pip install -r requirements.txt`, then `python scripts/download_data.py`, `python scripts/make_split.py`, notebooks `01`, `02`, `BIA_W6_Project_Template_PartA`, and `03_models_and_evaluation` on Google Colab (T4 GPU, Runtime → Run all). Every notebook clones the repository and downloads the data itself when run on Colab. The download script handles the Simula server's incomplete certificate chain (certificate checking stays on).
+- **Run it:** `pip install -r requirements.txt`, then `python scripts/download_data.py`, `python scripts/make_split.py`, then in `chandana/` the notebooks `01`, `02`, `BIA_W6_Project_Template_PartA`, and `03_models_and_evaluation` on Google Colab (T4 GPU, Runtime → Run all). Every notebook clones the repository and downloads the data itself when run on Colab. The download script handles the Simula server's incomplete certificate chain (certificate checking stays on).
 - **Seeds, hardware, training time:** split seed 42; training seeds 0, 1, 2; Google Colab T4 GPU; 18.3 s per epoch, 6 runs × 30 epochs ≈ 55 minutes. Each finished run is saved to Google Drive, so a disconnect does not lose it (our first full run was lost to a Colab disconnect). The brightness baseline needs no GPU (about 20 s for 100 images).
 - **Where the results come from:**
 
 | Output | Made by |
 |---|---|
-| `results/fig_polyp_share.png`, floor | `notebooks/01_data_and_floor.ipynb` |
-| `results/fig_20_examples.png`, `results/fig_closest_pairs.png` | `notebooks/02_look_and_leakage.ipynb` |
+| `results/fig_polyp_share.png`, floor | `chandana/01_data_and_floor.ipynb` |
+| `results/fig_20_examples.png`, `results/fig_closest_pairs.png` | `chandana/02_look_and_leakage.ipynb` |
 | `splits/*.txt`, `results/duplicates.csv` | `scripts/make_split.py` |
-| `results/A1_examples.png`, `A2_counts.csv`, `A5_data_table.md` | `notebooks/BIA_W6_Project_Template_PartA.ipynb` |
-| `results/B1_*`, `B2_*`, `C1_*` … `C5_*` | `notebooks/03_models_and_evaluation.ipynb` |
-| `results/B5_sanity.png`, `C3_calibration.*`, `requirements.txt` (exact versions from Colab) | `notebooks/04_template_extras.ipynb` (loads the saved models, no training) |
+| `results/A1_examples.png`, `A2_counts.csv`, `A5_data_table.md` | `chandana/BIA_W6_Project_Template_PartA.ipynb` |
+| `results/B1_*`, `B2_*`, `C1_*` … `C5_*` | `chandana/03_models_and_evaluation.ipynb` |
+| `results/B5_sanity.png`, `C3_calibration.*`, `requirements.txt` (exact versions from Colab) | `chandana/04_template_extras.ipynb` (loads the saved models, no training) |
 | `results/D1_*` | `dinesh/hard_images.ipynb` |
 | `results/C6_stats.md` | `python src/stats.py` |
 
@@ -84,7 +84,7 @@ Test set: the authors' 120 images, 256 × 256, threshold 0.5, mean over images; 
 
 ![Dice per test image](results/C1_boxplot.png)
 
-*Figure 2: Dice per test image for the floor, the threshold and both U-Nets (`notebooks/03`, C1).*
+*Figure 2: Dice per test image for the floor, the threshold and both U-Nets (`chandana/03`, C1).*
 
 - **Statistical tests** (`src/stats.py` → `results/C6_stats.md`): paired over the 120 test images, Holm-corrected over 3 comparisons. Threshold vs floor: +0.080 Dice, Wilcoxon p = 1.3 × 10⁻⁴; U-Net scratch vs threshold: +0.432, p = 2.4 × 10⁻¹⁸; **U-Net pretrained vs scratch: +0.106, better on 104 of 120 images, p = 5.3 × 10⁻¹³** (paired t-test gives the same conclusion). A test over seeds is not possible with 3 seeds (Wilcoxon needs at least 6); the seed spread is reported as ± std instead.
 - **What the numbers say:** every step up the ladder helps, and the intervals do not overlap. Pretraining, the one change between the two U-Nets, adds 0.106 Dice; it is better on 104 of 120 test images. The seed spread (± 0.007–0.009) is much smaller than the gap, so the gap is not luck of the random start. Our pretrained result is close to the published U-Net with a ResNet-34 encoder on the same split (Dice 0.876 at 512 px, Jha et al. 2021), with smaller images (256 px) and only 30 epochs.
@@ -92,7 +92,7 @@ Test set: the authors' 120 images, 256 × 256, threshold 0.5, mean over images; 
 - **The baseline:** brightness finds the polyp's general area (recall 0.60) but also grabs reflections and pale folds (precision 0.30). It fails for small polyps (0.146), where the bright area is mostly something else.
 - **Metrics that fit the task:** Dice and IoU per image (each image counts the same, so small polyps are not drowned by large ones). Not pixel accuracy: "always background" would score about 85 %. Recall matters most clinically (a missed polyp is the dangerous error); the pretrained U-Net's recall is 0.912.
 - **Worst cases** (`results/C3_worst_cases.png`, Figure 3): 7 of 120 test images score below 0.5, while 75 score 0.9 or more (median 0.918). The worst 8 show three patterns: (1) **drawing too small**: for large or folded polyps (25–44 % of the image) the network marks only the most prominent part; (2) **bright distractors**: a tiny polyp (1 %) next to a strong light reflection, where the network marks the bright area instead; (3) **unclear or several regions**: frames where the doctor marked two separate areas or where a pale fold looks like a polyp. 3 of the worst 8 come from the later batch (which is only 19 % of the test set), one of them with the coloured position box that never appears in training.
-- **Calibration** (`results/C3_calibration.png`, `notebooks/04`): grouping all test pixels by the predicted polyp probability (mean of 3 seeds), both U-Nets are close to honest: calibration error 0.023 for scratch and 0.063 for pretrained. The pretrained model slightly overestimates low probabilities (pixels it gives 5–15 % are polyp only 1–2 % of the time), which is the safe direction for not missing a polyp. So the better segmenter is not the better-calibrated one; a probability map shown to a doctor would need this check.
+- **Calibration** (`results/C3_calibration.png`, `chandana/04`): grouping all test pixels by the predicted polyp probability (mean of 3 seeds), both U-Nets are close to honest: calibration error 0.023 for scratch and 0.063 for pretrained. The pretrained model slightly overestimates low probabilities (pixels it gives 5–15 % are polyp only 1–2 % of the time), which is the safe direction for not missing a polyp. So the better segmenter is not the better-calibrated one; a probability map shown to a doctor would need this check.
 - **Which test images are hard** (Dinesh, `dinesh/hard_images.ipynb` → `results/D1_*`): the pretrained U-Net's Dice hardly depends on polyp size (Spearman r = +0.18) or on how much brighter the polyp is (r = +0.06), unlike the brightness baseline. The 7 images below Dice 0.5 have larger polyps than average (median 25 % vs. 12 % of the image), which matches the "drawing too small" pattern; 3 of them come from the later batch.
 - **Ceiling:** unknown. Kvasir-SEG gives one consensus mask per image and no agreement between annotators. Several worst cases have borders that a second doctor might draw differently, so a Dice of 1 is not a realistic goal.
 - **Test set:** used **once**, at the end, for all five settings. All choices (baseline colour channel and radius, best epoch, threshold 0.5) were made on validation. External data: none.
