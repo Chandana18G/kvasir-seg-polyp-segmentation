@@ -14,13 +14,14 @@ import os
 import random
 import sys
 
+# Let Python find our own modules in src/ (data.py, duplicates.py).
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from data import list_names, load_image, load_resized  # noqa: E402
 from duplicates import dhash, find_duplicates  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
-SEED = 42
-N_VAL = 100
+SEED = 42        # fixed random seed: the same validation images every time (reproducible)
+N_VAL = 100      # validation size: enough to pick the best epoch, leaves 779 for training
 
 
 def read_list(path):
@@ -33,17 +34,20 @@ def write_list(path, names):
         f.write("\n".join(sorted(names)) + "\n")
 
 
-names = list_names()
+# ---- the script starts here ----
+names = list_names()                                         # all 1,000 file names
 authors_train = read_list(os.path.join(ROOT, "data", "train.txt"))
 authors_test = read_list(os.path.join(ROOT, "data", "val.txt"))
+# Safety check: the authors' two lists together must be exactly our 1,000 images.
 assert sorted(authors_train + authors_test) == names, "split files do not match the images"
 
 print("Fingerprinting 1,000 images (takes about a minute) ...")
-hashes = [dhash(load_image(n)) for n in names]
-small_masks = {n: load_resized(n, 160)[1] for n in names}
+hashes = [dhash(load_image(n)) for n in names]               # one 64-bit fingerprint per image
+small_masks = {n: load_resized(n, 160)[1] for n in names}    # small masks are enough for the IoU test
 duplicates = find_duplicates(names, hashes, small_masks)
 
 os.makedirs(os.path.join(ROOT, "results"), exist_ok=True)
+# Save the pairs so anyone can check them (results/duplicates.csv).
 with open(os.path.join(ROOT, "results", "duplicates.csv"), "w") as f:
     f.write("image_a,image_b,hash_distance,mask_iou\n")
     for a, b, distance, iou in duplicates:
@@ -54,11 +58,11 @@ print(f"Near-duplicate pairs: {len(duplicates)} (saved to results/duplicates.csv
 test = set(authors_test)
 dropped = set()
 for a, b, _, _ in duplicates:
-    if a in test and b not in test:
+    if a in test and b not in test:            # a is a test image, b its copy in training
         dropped.add(b)
     if b in test and a not in test:
         dropped.add(a)
-train = [n for n in authors_train if n not in dropped]
+train = [n for n in authors_train if n not in dropped]       # (result: 1 image dropped)
 print(f"Dropped from training because a copy is in test: {sorted(dropped)}")
 
 # 2. Validation only from images that have no near-copy.
@@ -68,8 +72,8 @@ for a, b, _, _ in duplicates:
     has_copy.add(b)
 candidates = sorted(n for n in train if n not in has_copy)
 random.seed(SEED)
-val = random.sample(candidates, N_VAL)
-train = [n for n in train if n not in val]
+val = random.sample(candidates, N_VAL)       # 100 random images without copies
+train = [n for n in train if n not in val]   # the rest is training: 779 images
 
 os.makedirs(os.path.join(ROOT, "splits"), exist_ok=True)
 write_list(os.path.join(ROOT, "splits", "train.txt"), train)

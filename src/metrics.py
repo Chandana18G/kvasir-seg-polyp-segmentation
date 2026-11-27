@@ -12,11 +12,11 @@ import numpy as np
 
 
 def scores(pred, truth):
-    pred = pred.astype(bool)
+    pred = pred.astype(bool)                       # True = polyp
     truth = truth.astype(bool)
-    overlap = np.logical_and(pred, truth).sum()
-    either = np.logical_or(pred, truth).sum()
-    n_pred, n_true = pred.sum(), truth.sum()
+    overlap = np.logical_and(pred, truth).sum()    # true positives: polyp in both
+    either = np.logical_or(pred, truth).sum()      # union: polyp in at least one
+    n_pred, n_true = pred.sum(), truth.sum()       # predicted polyp pixels, true polyp pixels
     return {
         "dice": 2 * overlap / (n_pred + n_true) if n_pred + n_true > 0 else 1.0,
         "iou": overlap / either if either > 0 else 1.0,
@@ -27,6 +27,7 @@ def scores(pred, truth):
 
 def mean_scores(preds, truths):
     """Mean of each score over all images, plus the list of Dice per image."""
+    # Score each image on its own first, so a small polyp counts as much as a large one.
     per_image = [scores(p, t) for p, t in zip(preds, truths)]
     result = {k: float(np.mean([s[k] for s in per_image])) for k in per_image[0]}
     result["dice_per_image"] = [float(s["dice"]) for s in per_image]

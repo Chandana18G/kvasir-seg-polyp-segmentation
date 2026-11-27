@@ -22,7 +22,7 @@ MIN_PIXELS = 20          # at 256 x 256: 20 pixels = 0.03 % of the image
 
 def regions(mask):
     """List of boolean masks, one per connected region with at least MIN_PIXELS pixels."""
-    labels, n = ndimage.label(mask)
+    labels, n = ndimage.label(mask)                 # number each separate blob 1..n
     out = []
     for k in range(1, n + 1):
         region = labels == k
@@ -36,9 +36,10 @@ def count_hits(pred, truth):
     pred, truth = pred.astype(bool), truth.astype(bool)
     overlap = np.logical_and(pred, truth).sum()
     union = np.logical_or(pred, truth).sum()
-    polyps = regions(truth)
+    polyps = regions(truth)                         # the doctor's polyps (usually 1, sometimes 2)
     found_any = sum(1 for r in polyps if np.logical_and(pred, r).any())
     found_half = sum(1 for r in polyps if np.logical_and(pred, r).sum() >= 0.5 * r.sum())
+    # A predicted blob that touches no doctor's polyp at all = a false alarm.
     alarms = sum(1 for r in regions(pred) if not np.logical_and(r, truth).any())
     return {
         "hit_any": overlap > 0,

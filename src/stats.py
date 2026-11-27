@@ -20,7 +20,8 @@ from pathlib import Path
 import numpy as np
 from scipy import stats
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent      # the project folder
+# The ladder: each step is compared with the step below it.
 COMPARISONS = [
     ("baseline", "floor", "brightness threshold vs floor (always polyp)"),
     ("scratch", "baseline", "U-Net scratch vs brightness threshold"),
@@ -30,6 +31,8 @@ COMPARISONS = [
 
 def holm(p_values):
     """Holm correction: sort p-values, multiply the i-th smallest by (m - i), keep them rising."""
+    # Why: with 3 tests at p < 0.05 each, the chance of at least one false "significant" grows.
+    # Holm makes the smallest p-value pay most (x3), the next x2, the last x1.
     m = len(p_values)
     order = np.argsort(p_values)
     corrected = np.empty(m)
@@ -40,21 +43,24 @@ def holm(p_values):
     return corrected
 
 
+# Dice per test image for each method, saved by notebook 03.
 dice = json.loads((ROOT / "results" / "C1_dice_per_image.json").read_text())
 rows = []
 for a, b, label in COMPARISONS:
     x, y = np.array(dice[a]), np.array(dice[b])
-    diff = x - y
+    diff = x - y                               # per image: how much better method a is
     rows.append({
         "label": label,
         "mean_diff": diff.mean(),
-        "better": int((diff > 0).sum()),
-        "t_p": stats.ttest_rel(x, y).pvalue,
-        "w_p": stats.wilcoxon(x, y).pvalue,
+        "better": int((diff > 0).sum()),       # on how many of the 120 images a wins
+        "t_p": stats.ttest_rel(x, y).pvalue,   # paired t-test (ttest_rel = related samples)
+        "w_p": stats.wilcoxon(x, y).pvalue,    # Wilcoxon signed-rank: uses ranks, no normality needed
     })
+# Correct both kinds of p-values for the 3 comparisons.
 t_holm = holm(np.array([r["t_p"] for r in rows]))
 w_holm = holm(np.array([r["w_p"] for r in rows]))
 
+# Write the table as Markdown to results/C6_stats.md.
 lines = [
     "# C6 · Paired tests over the 120 test images (Holm-corrected)",
     "",
