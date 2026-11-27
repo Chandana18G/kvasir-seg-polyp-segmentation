@@ -18,6 +18,10 @@ licence allows research and education only. `scripts/download_data.py` fetches t
 Pretraining is the only change between the two U-Nets and adds 0.106 Dice (better on 104 of
 120 test images, Wilcoxon p = 5.3 × 10⁻¹³, Holm-corrected; 95 % bootstrap interval of the pretrained model: 0.832–0.888); it helps most for small polyps (0.843 vs. 0.706).
 Images from a later batch, unlike anything in training, score lower (0.809 vs. 0.874).
+
+**Not miss one (counting polyps, not pixels; `results/C7_hits.md`):** the pretrained U-Net touches the polyp in **all 120** test images
+(IoU ≥ 0.5 in 107) and finds **126 of 127** polyps (brightness threshold: 104 images, 108 polyps). The few misses are small second
+polyps next to a larger one. Every Kvasir-SEG image contains a polyp, so false alarms on polyp-free frames cannot be measured.
 Full analysis: [report.md](report.md).
 
 ![Doctor (green) vs. U-Net (red), Grad-CAM and uncertainty](results/C4_gradcam_uncertainty.png)
@@ -107,6 +111,7 @@ Test = the authors' own list of 120 (`Data-split/val.txt` on their GitHub), so o
 | `results/B5_sanity.png`, `results/C3_calibration.png`, `C3_calibration.md`, `requirements.txt` (exact versions) | `chandana/04_template_extras.ipynb` |
 | `results/D1_hard_images.png`, `D1_summary.md` | `dinesh/hard_images.ipynb` |
 | `results/C6_stats.md` (paired tests, Holm) | `python src/stats.py` |
+| `results/C7_hits.md`, `C7_missed_polyps.png` (polyps hit and missed, learning-curve gap) | `chandana/05_hit_rate.ipynb` |
 
 **Course template → our files.** We followed `BIA_W6_Project_Template.ipynb`. Its own note says segmentation projects use Part A, and U-Net cells with Dice for B and C; our file names for B and C therefore differ:
 
