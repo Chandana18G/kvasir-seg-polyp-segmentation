@@ -1,6 +1,6 @@
 | | |
 |---|---|
-| Question | Can a U-Net outline polyps in colonoscopy images well enough to help a doctor not miss one, and how much better is it than a simple colour threshold? |
+| Question | Can a U-Net outline polyps in colonoscopy images well enough to help a doctor not miss one, and how much better is it than a simple brightness threshold? |
 | Source, licence | Kvasir-SEG, https://datasets.simula.no/kvasir-seg/ (Jha et al., MMM 2020); research and education only, cite the paper; images not in our repository |
 | Modality, size | Endoscopy (colonoscopy), 2D RGB frames; 999 images (+ 1 dropped as a copy of a test image), 332-1920 px wide, used at 256 × 256 pixels; pixel size not reported |
 | Labels | one mask per image: polyp / background; who decided them: an engineer and a medical doctor (Labelbox), checked by one gastroenterologist; agreement not reported |

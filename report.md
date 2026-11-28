@@ -48,7 +48,7 @@ Can a network outline polyps in colonoscopy images well enough to help a doctor 
 
 ## 4 · Implementation and reproducibility (25 %)
 
-- **Run it:** `pip install -r requirements.txt`, then `python scripts/download_data.py`, `python scripts/make_split.py`, then in `chandana/` the notebooks `01`, `02`, `BIA_W6_Project_Template_PartA`, and `03_models_and_evaluation` on Google Colab (T4 GPU, Runtime → Run all). Every notebook clones the repository and downloads the data itself when run on Colab. The download script handles the Simula server's incomplete certificate chain (certificate checking stays on).
+- **Run it:** `pip install -r requirements.txt`, then `python scripts/download_data.py`, `python scripts/make_split.py`, then the notebooks in this order: in `dinesh/` `01_data_and_floor`, `02_look_and_leakage`, `BIA_W6_Project_Template_PartA`; in `chandana/` `03_models_and_evaluation` on Google Colab (T4 GPU, Runtime → Run all), `04_template_extras` and `05_hit_rate` (both load the 6 saved U-Nets, no training); then `dinesh/hard_images` and `python src/stats.py`. Every notebook clones the repository and downloads the data itself when run on Colab. The download script handles the Simula server's incomplete certificate chain (certificate checking stays on).
 - **Seeds, hardware, training time:** split seed 42; training seeds 0, 1, 2; Google Colab T4 GPU; 18.3 s per epoch, 6 runs × 30 epochs ≈ 55 minutes. Each finished run is saved to Google Drive, so a disconnect does not lose it (our first full run was lost to a Colab disconnect). The brightness baseline needs no GPU (about 20 s for 100 images).
 - **Where the results come from:**
 
@@ -62,6 +62,7 @@ Can a network outline polyps in colonoscopy images well enough to help a doctor 
 | `results/B5_sanity.png`, `C3_calibration.*`, `requirements.txt` (exact versions from Colab) | `chandana/04_template_extras.ipynb` (loads the saved models, no training) |
 | `results/D1_*` | `dinesh/hard_images.ipynb` |
 | `results/C6_stats.md` | `python src/stats.py` |
+| `results/C7_hits.md`, `C7_missed_polyps.png` | `chandana/05_hit_rate.ipynb` (uses `src/hits.py`; loads the saved models, no training) |
 
 ## 5 · Evaluation, validation and critical analysis (15 %)
 

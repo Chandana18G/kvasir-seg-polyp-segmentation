@@ -32,7 +32,7 @@ Full analysis: [report.md](report.md).
 
 | Folder | What | Who |
 |---|---|---|
-| [`chandana/`](chandana/) | **models and results**: `03_models_and_evaluation` (baseline, U-Nets, test evaluation, Grad-CAM) and `04_template_extras` (B5 sanity check, C3 calibration) | Chandana |
+| [`chandana/`](chandana/) | **models and results**: `03_models_and_evaluation` (baseline, U-Nets, test evaluation, Grad-CAM), `04_template_extras` (B5 sanity check, C3 calibration), `05_hit_rate` (not miss one: polyps hit and missed, learning-curve gap) | Chandana |
 | [`dinesh/`](dinesh/) | **data**: `01_data_and_floor`, `02_look_and_leakage`, the template Part A, and `hard_images` (which test images are hard) | Dinesh |
 | `src/`, `scripts/` | shared code: `scripts/`, `src/data.py`, `src/duplicates.py` belong to the data part; `src/baseline.py`, `unet.py`, `train.py`, `metrics.py`, `stats.py` to the models part | see "Who is responsible for what" |
 | `results/` | all tables and figures (parts A, B, C and D1) | made by the notebooks above |
@@ -97,6 +97,9 @@ Test = the authors' own list of 120 (`Data-split/val.txt` on their GitHub), so o
   5. `dinesh/BIA_W6_Project_Template_PartA.ipynb`: the course template, Part A (A1–A5).
   6. `chandana/03_models_and_evaluation.ipynb` **on Colab, T4 GPU**: brightness baseline, U-Net from scratch vs. ImageNet-pretrained (3 seeds each), test set once, Grad-CAM, uncertainty (`results/B*`, `results/C*`).
   7. `chandana/04_template_extras.ipynb` (Colab, no GPU needed, about 10 min): loads the 6 saved U-Nets from Google Drive and adds the template's B5 heat-map sanity check, C3 calibration and exact package versions.
+  8. `chandana/05_hit_rate.ipynb` (Colab, T4 GPU about 5 min, CPU about 20 min): loads the 6 saved U-Nets; polyps hit and missed (`src/hits.py`), the misses one by one, and the learning-curve gap.
+  9. `dinesh/hard_images.ipynb`: which test images are hard (needs `results/C1_dice_per_image.json` from step 6).
+  10. `python src/stats.py`: paired tests over the 120 test images, `results/C6_stats.md`.
 - **Which file makes which table or figure:**
 
 | Output | Made by |
